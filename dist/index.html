@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillBridge • Peer-to-Peer Skill Exchange | DBIT ISE</title>
+  
+  <!-- Inter Font from Google Fonts (as used in awsevents.dbit.edu.in) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              cyan: '#04788f',
+              orange: '#b85a00',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #0284c7; }
+
+    /* Custom Cursor */
+    @media (hover: hover) and (pointer: fine) {
+      body, button, a, input, select, textarea, .hover-target {
+        cursor: none !important;
+      }
+    }
+    #cursor-dot {
+      pointer-events: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 7px; height: 7px;
+      background: #38bdf8;
+      border-radius: 50%;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.15s ease;
+      box-shadow: 0 0 8px #38bdf8;
+    }
+    #cursor-ring {
+      pointer-events: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 32px; height: 32px;
+      border: 1.5px solid rgba(56, 189, 248, 0.6);
+      border-radius: 50%;
+      z-index: 99998;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                  height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                  border-color 0.2s ease, 
+                  background 0.2s ease;
+    }
+    .cursor-active #cursor-ring {
+      width: 48px;
+      height: 48px;
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    /* Live Interactive Particles Canvas */
+    #particles-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Subtle Technical Grid Background */
+    .subtle-grid {
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* 3D Card Flip */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .card-flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 1rem;
+    }
+    .card-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Interactive Proximity Spotlight on Cards */
+    .spotlight-card {
+      position: relative;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                  border-color 0.3s ease, 
+                  box-shadow 0.3s ease;
+      overflow: hidden;
+    }
+    .spotlight-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: radial-gradient(350px circle at var(--mouse-x, -500px) var(--mouse-y, -500px), rgba(56, 189, 248, 0.18), transparent 45%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 0;
+    }
+    .spotlight-card:hover::before {
+      opacity: 1;
+    }
+    .spotlight-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 12px 30px -5px rgba(2, 132, 199, 0.2);
+    }
+    .spotlight-card > * {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body class="bg-[#090d16] text-slate-100 font-sans min-h-screen selection:bg-sky-500 selection:text-white relative subtle-grid overflow-x-hidden">
+
+  <!-- Custom Cursor Elements -->
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- Live Interactive Dots Canvas (No Wireframe Shapes) -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- Ambient Glow -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[300px] bg-sky-600/10 rounded-full blur-[140px] pointer-events-none z-0"></div>
+
+  <div class="relative z-10 flex flex-col min-h-screen">
+
+    <!-- ============================================================== -->
+    <!-- NAVBAR                                                         -->
+    <!-- ============================================================== -->
+    <header class="sticky top-0 z-40 bg-[#090d16]/90 backdrop-blur-md border-b border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+        
+        <!-- Logo & College Subheading -->
+        <div class="flex items-center gap-3.5 shrink-0 hover-target">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+            <i data-lucide="repeat" class="w-5 h-5 stroke-[2.5]"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-xl tracking-tight text-white">SkillBridge</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-400 border border-sky-500/20 uppercase tracking-wide">P2P Exchange</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium">AWS Student Builder Group • DBIT ISE</p>
+          </div>
+        </div>
+
+        <!-- Center Tabs -->
+        <nav class="hidden md:flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800">
+          <button onclick="switchTab('explore')" id="nav-explore" class="hover-target tab-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all bg-sky-600 text-white shadow-sm">
+            <i data-lucide="compass" class="w-4 h-4"></i> Explore Peers
+          </button>
+          <button onclick="switchTab('matrix')" id="nav-matrix" class="hover-target tab-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+            <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Match Matrix
+          </button>
+          <button onclick="switchTab('requests')" id="nav-requests" class="hover-target tab-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+            <i data-lucide="send" class="w-4 h-4 text-emerald-400"></i> Proposals Sent
+            <span id="requests-count-badge" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">0</span>
+          </button>
+        </nav>
+
+        <!-- Right Quick Controls -->
+        <div class="flex items-center gap-2.5 shrink-0">
+          <button onclick="openArchitectureModal()" class="hover-target px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all">
+            <i data-lucide="layers" class="w-4 h-4 text-sky-400"></i>
+            <span class="hidden sm:inline">AWS Architecture</span>
+            <span class="text-[10px] font-mono bg-sky-500/20 text-sky-300 px-1.5 py-0.5 rounded font-bold">25 Pts</span>
+          </button>
+
+          <button onclick="openBookmarksDrawer()" class="hover-target relative p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-all">
+            <i data-lucide="bookmark" class="w-4 h-4"></i>
+            <span id="bookmark-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[9px] font-bold text-white flex items-center justify-center">0</span>
+          </button>
+
+          <button onclick="openNewListingModal()" class="hover-target px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-white shadow-sm transition-all active:scale-95">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Post My Skill</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Tab Bar Sub-header -->
+      <div class="flex md:hidden items-center justify-around px-4 py-2 bg-slate-900 border-t border-slate-800">
+        <button onclick="switchTab('explore')" class="flex-1 py-1 text-xs font-semibold text-center text-sky-400 flex items-center justify-center gap-1.5">
+          <i data-lucide="compass" class="w-3.5 h-3.5"></i> Explore
+        </button>
+        <button onclick="switchTab('matrix')" class="flex-1 py-1 text-xs font-semibold text-center text-slate-400 flex items-center justify-center gap-1.5">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Matrix
+        </button>
+        <button onclick="switchTab('requests')" class="flex-1 py-1 text-xs font-semibold text-center text-slate-400 flex items-center justify-center gap-1.5">
+          <i data-lucide="send" class="w-3.5 h-3.5 text-emerald-400"></i> Proposals
+        </button>
+      </div>
+    </header>
+
+    <!-- Campus Trades Ticker -->
+    <div class="bg-slate-900/60 border-b border-slate-800/80 py-2.5 px-4">
+      <div class="max-w-7xl mx-auto flex items-center gap-3 text-xs">
+        <div class="flex items-center gap-1.5 text-sky-400 font-semibold uppercase tracking-wider text-[11px] shrink-0 bg-sky-500/10 px-2.5 py-0.5 rounded-full border border-sky-500/20">
+          <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span> Campus Trades
+        </div>
+        <div id="ticker-content" class="text-slate-300 text-xs truncate transition-all duration-300">
+          Arjun (ISE 6th Sem) just traded <b>AWS Cloud Architecture</b> for <b>React & Frontend</b> with Rohan (CSE)
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <!-- ========================================== -->
+      <!-- SCREEN 1: EXPLORE PEERS                     -->
+      <!-- ========================================== -->
+      <section id="screen-explore" class="screen-view space-y-8 block">
+        
+        <!-- Hero Section -->
+        <div class="pt-4 pb-2 max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-300 text-xs font-semibold mb-4">
+            <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-sky-400"></i>
+            Don Bosco Institute of Technology • ISE Skill Network
+          </div>
+          <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            Teach what you know. <br>
+            <span class="text-sky-400">Learn what you need. Zero money.</span>
+          </h1>
+          <p class="mt-3 text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
+            A peer-to-peer campus platform where students trade technical skills directly. Connect with classmates to swap AWS Cloud, Web Development, Machine Learning, UI/UX, or Data Structures.
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-800">
+            <div>
+              <p class="text-2xl font-bold font-display text-white" id="stat-active-peers">24</p>
+              <p class="text-xs text-slate-400 mt-0.5 font-medium">Available Peer Tutors</p>
+            </div>
+            <div>
+              <p class="text-2xl font-bold font-display text-sky-400" id="stat-skills-taught">48+</p>
+              <p class="text-xs text-slate-400 mt-0.5 font-medium">Skills Listed</p>
+            </div>
+            <div>
+              <p class="text-2xl font-bold font-display text-amber-400">100%</p>
+              <p class="text-xs text-slate-400 mt-0.5 font-medium">Free Student Barter</p>
+            </div>
+            <div>
+              <p class="text-2xl font-bold font-display text-emerald-400">AWS EC2</p>
+              <p class="text-xs text-slate-400 mt-0.5 font-medium">Amazon Linux 2023</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="spotlight-card p-4 sm:p-5 space-y-4">
+          <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+              <input 
+                type="text" 
+                id="search-input" 
+                oninput="handleFilterChange()" 
+                placeholder="Search by student name, skill offered (e.g. AWS, React) or wanted..." 
+                class="hover-target w-full pl-11 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 focus:border-sky-500 text-xs sm:text-sm text-slate-100 placeholder-slate-400 outline-none transition-all"
+              >
+            </div>
+
+            <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+              <button onclick="setFilterMode('all')" id="mode-all" class="hover-target filter-mode-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 text-white transition-all">All Skills</button>
+              <button onclick="setFilterMode('offered')" id="mode-offered" class="hover-target filter-mode-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all">Teaching</button>
+              <button onclick="setFilterMode('wanted')" id="mode-wanted" class="hover-target filter-mode-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all">Seeking</button>
+            </div>
+
+            <select id="branch-filter" onchange="handleFilterChange()" class="hover-target bg-slate-900 text-slate-200 border border-slate-700/80 text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none focus:border-sky-500">
+              <option value="all">All Departments</option>
+              <option value="ISE">Information Science (ISE)</option>
+              <option value="CSE">Computer Science (CSE)</option>
+              <option value="AIML">AI & Machine Learning</option>
+              <option value="ECE">Electronics (ECE)</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-800 text-xs">
+            <span class="text-slate-400 text-[11px] font-semibold flex items-center gap-1 mr-1">
+              <i data-lucide="tag" class="w-3.5 h-3.5 text-slate-500"></i> Popular Skills:
+            </span>
+            <button onclick="applyQuickTag('AWS Cloud Architecture')" class="hover-target px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-medium transition-all">AWS Cloud</button>
+            <button onclick="applyQuickTag('Python & Data Science')" class="hover-target px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-medium transition-all">Python / ML</button>
+            <button onclick="applyQuickTag('React & Frontend')" class="hover-target px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-200 border border-slate-700 font-medium transition-all">React.js</button>
+            <button onclick="applyQuickTag('Figma & UI/UX')" class="hover-target px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-slate-700 font-medium transition-all">Figma UI/UX</button>
+            <button onclick="applyQuickTag('Docker & DevOps')" class="hover-target px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-medium transition-all">Docker DevOps</button>
+            <button onclick="resetFilters()" class="hover-target ml-auto text-xs text-slate-400 hover:text-white underline font-medium">Reset All</button>
+          </div>
+        </div>
+
+        <!-- Hint Banner -->
+        <div class="flex items-center justify-between text-xs text-slate-400 px-1 font-medium">
+          <div class="flex items-center gap-2">
+            <i data-lucide="info" class="w-4 h-4 text-sky-400"></i>
+            <span>Move cursor over cards for interactive glow. Click card to 3D flip.</span>
+          </div>
+          <span id="results-count" class="font-semibold text-slate-300">Showing 6 Peers</span>
+        </div>
+
+        <!-- Student Profiles Grid -->
+        <div id="profiles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 2: MATCH MATRIX (MULTI-SELECT PILLS) -->
+      <!-- ========================================== -->
+      <section id="screen-matrix" class="screen-view space-y-6 hidden">
+        <div class="spotlight-card p-6 sm:p-8">
+          <div class="max-w-2xl">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold mb-2">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+              Multi-Skill Reciprocal Matching Engine
+            </div>
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Find Your "Perfect Match" Pair</h2>
+            <p class="text-slate-300 text-xs sm:text-sm mt-1.5">
+              Select <b>multiple skills</b> you can teach, and <b>multiple skills</b> you want to learn. Our algorithm calculates match percentages to find classmates who give what you need!
+            </p>
+          </div>
+
+          <!-- Multi-Select Skills Section -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 p-5 rounded-xl bg-slate-900 border border-slate-800">
+            <!-- 1. What I Can Teach (Multi-Select Pills) -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> 1. Skills I can teach (select multiple):
+                </label>
+                <span id="teach-selected-count" class="text-[11px] text-slate-400 font-mono">0 selected</span>
+              </div>
+              <div id="teach-pills" class="flex flex-wrap gap-2 pt-1">
+                <!-- Multi-select pill buttons populated by JS -->
+              </div>
+            </div>
+
+            <!-- 2. What I Want to Learn (Multi-Select Pills) -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs font-bold text-sky-400 flex items-center gap-1">
+                  <i data-lucide="search" class="w-3.5 h-3.5"></i> 2. Skills I want to learn (select multiple):
+                </label>
+                <span id="learn-selected-count" class="text-[11px] text-slate-400 font-mono">0 selected</span>
+              </div>
+              <div id="learn-pills" class="flex flex-wrap gap-2 pt-1">
+                <!-- Multi-select pill buttons populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Selection Summary & Reset -->
+          <div class="flex items-center justify-between mt-4 px-1 text-xs">
+            <span class="text-slate-400">Select skills above to dynamically filter and rank mutual partners.</span>
+            <button onclick="clearMatrixPills()" class="hover-target text-slate-400 hover:text-white underline font-medium">Clear Matrix Selections</button>
+          </div>
+
+          <!-- Computed Mutual Matches -->
+          <div class="mt-8">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2 mb-3">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+              Computed Reciprocal Matches:
+              <span id="matrix-match-count" class="text-[11px] px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 font-semibold border border-sky-500/20">0 Found</span>
+            </h3>
+            <div id="matrix-results-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Matrix cards injected dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 3: PROPOSALS SENT                    -->
+      <!-- ========================================== -->
+      <section id="screen-requests" class="screen-view space-y-6 hidden">
+        <div class="spotlight-card p-6 sm:p-8">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold mb-2">
+                <i data-lucide="clipboard-check" class="w-3.5 h-3.5"></i>
+                Simulated Interest Ledger
+              </div>
+              <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">Your Sent Exchange Proposals</h2>
+              <p class="text-slate-400 text-xs sm:text-sm mt-1">Track active connection requests, hours pledged, and exchange terms.</p>
+            </div>
+            <button onclick="clearAllProposals()" class="hover-target px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all flex items-center gap-1.5 self-start sm:self-auto">
+              <i data-lucide="trash-2" class="w-4 h-4"></i> Clear History
+            </button>
+          </div>
+
+          <div id="proposals-list" class="space-y-3.5 mt-5">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-[#090d16] border-t border-slate-800 py-6 mt-auto">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400 border border-sky-500/20">
+            <i data-lucide="cloud" class="w-3.5 h-3.5"></i>
+          </div>
+          <span>Hosted on <b>Amazon EC2</b> (Amazon Linux 2023 • Nginx) in <b>ap-southeast-2</b></span>
+        </div>
+        <div>
+          Don Bosco Institute of Technology • ISE • Blueprint to Live 2026
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- MODAL 1: PROPOSAL BUILDER -->
+  <div id="proposal-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="spotlight-card max-w-lg w-full p-6 border border-slate-700 shadow-2xl relative">
+      <div class="flex items-start justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400 px-2 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20">Step-by-Step Proposal</span>
+          <h3 class="font-display text-lg font-bold text-white mt-1.5" id="modal-peer-title">Propose Skill Barter</h3>
+        </div>
+        <button onclick="closeProposalModal()" class="hover-target text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="mt-4 p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
+        <div id="modal-peer-avatar" class="w-9 h-9 rounded-lg bg-sky-600 font-bold flex items-center justify-center text-white text-xs">AK</div>
+        <div>
+          <h4 id="modal-peer-name" class="text-xs font-bold text-slate-100">Arjun Kumar</h4>
+          <p id="modal-peer-details" class="text-[11px] text-slate-400">ISE 6th Sem • Teaching: AWS Cloud</p>
+        </div>
+      </div>
+
+      <form id="proposal-form" onsubmit="handleProposalSubmit(event)" class="mt-4 space-y-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">What skill will YOU offer in return?</label>
+          <input type="text" id="prop-my-skill" required placeholder="e.g. React.js, Python Pandas, UI Design..." class="hover-target w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-500 text-white outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Weekly Time Pledge</label>
+            <select id="prop-hours" class="hover-target w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-500 text-white outline-none">
+              <option value="1 hr / week">1 Hour / week</option>
+              <option value="2 hrs / week" selected>2 Hours / week</option>
+              <option value="4 hrs / week">4 Hours / week</option>
+              <option value="Weekend sprint">Weekend Sprint</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Preferred Medium</label>
+            <select id="prop-medium" class="hover-target w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-500 text-white outline-none">
+              <option value="College Campus Library">Campus Library</option>
+              <option value="Discord Voice / Screen">Discord Screen Share</option>
+              <option value="Google Meet">Google Meet</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Short Introduction Note</label>
+          <textarea id="prop-message" rows="2" placeholder="Hi! I saw you are teaching AWS Cloud. I can help you with React in exchange..." class="hover-target w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 focus:border-sky-500 text-white outline-none"></textarea>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeProposalModal()" class="hover-target px-4 py-2 rounded-xl font-semibold text-slate-400 hover:text-white bg-slate-800 transition-all">Cancel</button>
+          <button type="submit" class="hover-target px-4 py-2 rounded-xl font-semibold text-white bg-sky-600 hover:bg-sky-500 shadow-sm transition-all flex items-center gap-1.5">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Proposal
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: ARCHITECTURE DIAGRAM -->
+  <div id="architecture-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="spotlight-card max-w-2xl w-full p-6 sm:p-7 border border-slate-700 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-start justify-between border-b border-slate-800 pb-4">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400 px-2.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/20">Evaluation Pillar • 25 Points</span>
+          <h3 class="font-display text-xl font-bold text-white mt-1.5">AWS Architecture: SkillBridge</h3>
+          <p class="text-xs text-slate-400">Four-tier design matching Blueprint to Live specifications</p>
+        </div>
+        <button onclick="closeArchitectureModal()" class="hover-target text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="mt-5 space-y-3 text-xs">
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3.5">
+          <div class="w-9 h-9 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center shrink-0">
+            <i data-lucide="users" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p class="font-bold text-white text-xs">1. CLIENT LAYER (Students / Peers)</p>
+            <p class="text-slate-400 text-[11px]">Mobile & Desktop Browsers • Browses profiles, 3D card inspect, builds barter proposals</p>
+          </div>
+        </div>
+
+        <div class="flex justify-center text-slate-600">
+          <i data-lucide="arrow-down" class="w-4 h-4"></i>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3.5">
+          <div class="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center shrink-0">
+            <i data-lucide="layout" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p class="font-bold text-white text-xs">2. PRESENTATION LAYER (Amazon EC2 • Nginx)</p>
+            <p class="text-slate-400 text-[11px]">Amazon Linux 2023 EC2 Instance (`t3.micro`) • Nginx Reverse Proxy serving responsive Single Page App in `ap-southeast-2`</p>
+          </div>
+        </div>
+
+        <div class="flex justify-center text-slate-600">
+          <i data-lucide="arrow-down" class="w-4 h-4"></i>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3.5">
+          <div class="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p class="font-bold text-white text-xs">3. APPLICATION LOGIC (Client-Side & AWS Lambda Proposed)</p>
+            <p class="text-slate-400 text-[11px]"><b>Prototype:</b> Client-side JS Matching Matrix & LocalStorage.<br><b>Production:</b> AWS Lambda + API Gateway for proposal match validation.</p>
+          </div>
+        </div>
+
+        <div class="flex justify-center text-slate-600">
+          <i data-lucide="arrow-down" class="w-4 h-4"></i>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3.5">
+          <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+            <i data-lucide="database" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p class="font-bold text-white text-xs">4. DATA SOURCE (Mocked & Amazon DynamoDB Proposed)</p>
+            <p class="text-slate-400 text-[11px]"><b>Prototype:</b> JSON dataset + LocalStorage.<br><b>Production:</b> Amazon DynamoDB Single-Table Design (`PK=STUDENT_ID, SK=SKILL_KEY`).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: POST LISTING -->
+  <div id="new-listing-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="spotlight-card max-w-md w-full p-6 border border-slate-700 shadow-2xl">
+      <div class="flex items-start justify-between border-b border-slate-800 pb-3.5">
+        <div>
+          <h3 class="font-display text-lg font-bold text-white">Post Your Skill Listing</h3>
+          <p class="text-xs text-slate-400">Add your profile to the campus directory</p>
+        </div>
+        <button onclick="closeNewListingModal()" class="hover-target text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleNewListingSubmit(event)" class="mt-4 space-y-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Your Full Name & Semester</label>
+          <input type="text" id="new-name" required placeholder="e.g. Sneha Reddy (ISE 6th Sem)" class="hover-target w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold text-emerald-400 mb-1">Skills You Can TEACH (comma-separated)</label>
+          <input type="text" id="new-offered" required placeholder="e.g. Flutter, Firebase, UI Design" class="hover-target w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold text-sky-400 mb-1">Skills You Want to LEARN (comma-separated)</label>
+          <input type="text" id="new-wanted" required placeholder="e.g. AWS Cloud, Docker, DSA" class="hover-target w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Special Badge</label>
+          <select id="new-badge" class="hover-target w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white outline-none">
+            <option value="Quick Solver">⚡ Quick Solver</option>
+            <option value="Deep Diver">🌊 Deep Diver</option>
+            <option value="Patience Master">🧘 Patience Master</option>
+            <option value="Hackathon Veteran">🏆 Hackathon Veteran</option>
+          </select>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeNewListingModal()" class="hover-target px-4 py-2 rounded-xl text-slate-400 hover:text-white bg-slate-800">Cancel</button>
+          <button type="submit" class="hover-target px-4 py-2 rounded-xl text-white font-semibold bg-sky-600 hover:bg-sky-500 shadow-sm">Add Listing</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DRAWER: BOOKMARKS -->
+  <div id="bookmarks-drawer" class="fixed inset-y-0 right-0 z-50 w-full sm:w-96 bg-slate-950 border-l border-slate-800 p-6 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+      <div class="flex items-center gap-2">
+        <i data-lucide="bookmark" class="w-5 h-5 text-rose-400"></i>
+        <h3 class="font-display text-base font-bold text-white">Bookmarked Peers</h3>
+      </div>
+      <button onclick="closeBookmarksDrawer()" class="hover-target text-slate-400 hover:text-white p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div id="bookmarks-list" class="flex-1 overflow-y-auto py-4 space-y-3">
+      <!-- Injected dynamically -->
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm rounded-xl spotlight-card border border-emerald-500/30 p-3.5 shadow-xl flex items-center gap-3">
+    <div class="w-7 h-7 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+      <i data-lucide="check" class="w-4 h-4 stroke-[2.5]"></i>
+    </div>
+    <div>
+      <p id="toast-title" class="text-xs font-bold text-white">Proposal Sent Successfully!</p>
+      <p id="toast-msg" class="text-[11px] text-slate-300">Simulated exchange request recorded in ledger.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT LOGIC & PROXIMITY ANIMATIONS                        -->
+  <!-- ============================================================== -->
+  <script>
+    const availableSkillsList = [
+      "AWS Cloud Architecture",
+      "React & Frontend",
+      "Python & Data Science",
+      "Machine Learning",
+      "Figma & UI/UX",
+      "DSA & Java",
+      "Docker & DevOps",
+      "Linux",
+      "Flutter Mobile Apps",
+      "SQL & Databases"
+    ];
+
+    const initialProfiles = [
+      {
+        id: 1,
+        name: "Arjun Kumar",
+        initials: "AK",
+        branch: "ISE",
+        sem: "6th Sem",
+        rating: "4.9",
+        reviews: 14,
+        badge: "Deep Diver",
+        badgeBg: "bg-sky-500/10 text-sky-400 border-sky-500/20",
+        avatarBg: "from-sky-500 to-blue-600",
+        bio: "Specializing in AWS Cloud Architectures and Linux scripting. Looking to team up for frontend designs.",
+        teaching: ["AWS Cloud Architecture", "Linux", "Docker & DevOps"],
+        learning: ["React & Frontend", "Figma & UI/UX"],
+        availability: "Tue / Thu after 4 PM • Campus Library",
+        preferredTool: "Discord & Campus Lab",
+        patienceLevel: "⭐⭐⭐⭐⭐ High"
+      },
+      {
+        id: 2,
+        name: "Ananya Sharma",
+        initials: "AS",
+        branch: "ISE",
+        sem: "6th Sem",
+        rating: "5.0",
+        reviews: 21,
+        badge: "Patience Master",
+        badgeBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+        avatarBg: "from-emerald-500 to-teal-600",
+        bio: "Python data science enthusiast. I love teaching pandas, NumPy, and basic regression models clearly.",
+        teaching: ["Python & Data Science", "Machine Learning", "SQL & Databases"],
+        learning: ["AWS Cloud Architecture", "Docker & DevOps"],
+        availability: "Mon / Wed 5 PM - 7 PM",
+        preferredTool: "Google Meet / Discord",
+        patienceLevel: "⭐⭐⭐⭐⭐ Very High"
+      },
+      {
+        id: 3,
+        name: "Rohan Fernandes",
+        initials: "RF",
+        branch: "CSE",
+        sem: "8th Sem",
+        rating: "4.8",
+        reviews: 18,
+        badge: "Hackathon Veteran",
+        badgeBg: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+        avatarBg: "from-purple-500 to-pink-600",
+        bio: "Built 12+ web apps. Happy to teach React, Tailwind, and REST APIs in exchange for deep DSA problem solving.",
+        teaching: ["React & Frontend", "Figma & UI/UX"],
+        learning: ["DSA & Java", "AWS Cloud Architecture"],
+        availability: "Weekends all day",
+        preferredTool: "Discord Live Screen",
+        patienceLevel: "⭐⭐⭐⭐ Patient"
+      },
+      {
+        id: 4,
+        name: "Pooja Varma",
+        initials: "PV",
+        branch: "AIML",
+        sem: "4th Sem",
+        rating: "4.9",
+        reviews: 9,
+        badge: "Quick Solver",
+        badgeBg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+        avatarBg: "from-amber-500 to-orange-600",
+        bio: "Passionate UI/UX designer. I can teach you Figma prototyping, wireframing, and user empathy design.",
+        teaching: ["Figma & UI/UX", "React & Frontend"],
+        learning: ["Python & Data Science", "Machine Learning"],
+        availability: "Friday afternoons",
+        preferredTool: "Figma Multiplayer & Zoom",
+        patienceLevel: "⭐⭐⭐⭐⭐ Dedicated"
+      },
+      {
+        id: 5,
+        name: "Vikas Gowda",
+        initials: "VG",
+        branch: "ISE",
+        sem: "6th Sem",
+        rating: "4.7",
+        reviews: 12,
+        badge: "Deep Diver",
+        badgeBg: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+        avatarBg: "from-cyan-500 to-blue-600",
+        bio: "Cracked 250+ LeetCode problems in Java. Can coach anyone struggling with Trees, Graphs, and DP.",
+        teaching: ["DSA & Java", "SQL & Databases"],
+        learning: ["AWS Cloud Architecture", "React & Frontend"],
+        availability: "Everyday 7 PM - 9 PM",
+        preferredTool: "Google Meet + Whiteboard",
+        patienceLevel: "⭐⭐⭐⭐ Methodical"
+      },
+      {
+        id: 6,
+        name: "Kavya Nair",
+        initials: "KN",
+        branch: "ECE",
+        sem: "6th Sem",
+        rating: "4.9",
+        reviews: 8,
+        badge: "Patience Master",
+        badgeBg: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+        avatarBg: "from-rose-500 to-pink-600",
+        bio: "Building cross-platform mobile apps with Flutter. Seeking someone to help with Dockerizing backends.",
+        teaching: ["Flutter Mobile Apps", "Linux"],
+        learning: ["Docker & DevOps", "AWS Cloud Architecture"],
+        availability: "Saturday mornings",
+        preferredTool: "Google Meet",
+        patienceLevel: "⭐⭐⭐⭐⭐ Very High"
+      }
+    ];
+
+    let profiles = [...initialProfiles];
+    let bookmarks = JSON.parse(localStorage.getItem('sb_bookmarks') || '[]');
+    let proposals = JSON.parse(localStorage.getItem('sb_proposals') || '[]');
+    let filterMode = 'all';
+    let selectedPeerForProposal = null;
+
+    // Multi-Select Matrix States
+    let selectedOfferSkills = [];
+    let selectedSeekSkills = [];
+
+    // -------------------------------------------------------------
+    // RENDER PROFILES WITH PROXIMITY SPOTLIGHT
+    // -------------------------------------------------------------
+    function renderProfiles(list = profiles) {
+      const grid = document.getElementById('profiles-grid');
+      const resultsCount = document.getElementById('results-count');
+      resultsCount.innerText = `Showing ${list.length} Peers`;
+
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center spotlight-card rounded-2xl">
+            <i data-lucide="search-x" class="w-10 h-10 text-slate-500 mx-auto mb-2"></i>
+            <h4 class="text-sm font-bold text-white">No matching peer profiles found</h4>
+            <p class="text-xs text-slate-400 mt-0.5">Try clearing filters or searching another keyword.</p>
+            <button onclick="resetFilters()" class="hover-target mt-3.5 px-3.5 py-1.5 rounded-lg bg-sky-600 text-white font-medium text-xs">Clear Filters</button>
+          </div>
+        `;
+        lucide.createIcons();
+        attachHoverTargets();
+        initCardSpotlights();
+        return;
+      }
+
+      grid.innerHTML = list.map(peer => {
+        const isBookmarked = bookmarks.includes(peer.id);
+        return `
+          <div class="perspective-1000 h-[415px]" id="card-container-${peer.id}">
+            <div class="card-inner w-full h-full cursor-pointer relative" onclick="toggleCardFlip(${peer.id}, event)">
+              
+              <!-- FRONT -->
+              <div class="card-front spotlight-card p-5 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-11 h-11 rounded-xl bg-gradient-to-tr ${peer.avatarBg} flex items-center justify-center font-bold text-sm text-white shadow-sm shrink-0">
+                        ${peer.initials}
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-1.5">
+                          <h3 class="font-display font-bold text-sm text-white">${peer.name}</h3>
+                          <span class="text-xs text-amber-400 font-bold">★ ${peer.rating}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 font-medium">${peer.branch} • ${peer.sem}</p>
+                      </div>
+                    </div>
+
+                    <button onclick="toggleBookmark(${peer.id}, event)" class="hover-target p-1.5 rounded-lg bg-slate-900 border border-slate-800 ${isBookmarked ? 'text-rose-400' : 'text-slate-400 hover:text-white'}">
+                      <i data-lucide="bookmark" class="w-4 h-4 ${isBookmarked ? 'fill-rose-400' : ''}"></i>
+                    </button>
+                  </div>
+
+                  <div class="mt-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${peer.badgeBg}">
+                    <i data-lucide="award" class="w-3 h-3"></i> ${peer.badge}
+                  </div>
+
+                  <p class="text-xs text-slate-300 mt-2.5 line-clamp-2 leading-relaxed">
+                    "${peer.bio}"
+                  </p>
+                </div>
+
+                <div class="space-y-2.5 my-2">
+                  <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1 mb-1">
+                      <i data-lucide="check-circle" class="w-3 h-3"></i> Can Teach:
+                    </span>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${peer.teaching.map(t => `<span class="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-xs font-medium">${t}</span>`).join('')}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1 mb-1">
+                      <i data-lucide="search" class="w-3 h-3"></i> Wants to Learn:
+                    </span>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${peer.learning.map(l => `<span class="px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-300 border border-sky-500/20 text-xs font-medium">${l}</span>`).join('')}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                  <span class="text-[11px] text-slate-400 flex items-center gap-1 hover:text-white">
+                    <i data-lucide="rotate-cw" class="w-3 h-3"></i> Flip for schedule
+                  </span>
+                  <button onclick="openProposalModal(${peer.id}, event)" class="hover-target px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs shadow-sm transition-all flex items-center gap-1.5">
+                    <i data-lucide="send" class="w-3 h-3"></i> Express Interest
+                  </button>
+                </div>
+              </div>
+
+              <!-- BACK -->
+              <div class="card-back spotlight-card p-5 flex flex-col justify-between bg-slate-900">
+                <div>
+                  <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div class="flex items-center gap-2">
+                      <i data-lucide="calendar" class="w-4 h-4 text-sky-400"></i>
+                      <h4 class="font-display font-bold text-xs text-white">Barter Terms & Schedule</h4>
+                    </div>
+                    <span class="text-[11px] text-slate-400">ID: #${peer.id}</span>
+                  </div>
+
+                  <div class="mt-3.5 space-y-3 text-xs">
+                    <div>
+                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Availability Window:</p>
+                      <p class="text-slate-200 font-medium mt-0.5">${peer.availability}</p>
+                    </div>
+
+                    <div>
+                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Preferred Meeting Mode:</p>
+                      <p class="text-slate-200 font-medium mt-0.5">${peer.preferredTool}</p>
+                    </div>
+
+                    <div>
+                      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Teaching Pace & Style:</p>
+                      <p class="text-slate-200 font-medium mt-0.5">${peer.patienceLevel}</p>
+                    </div>
+
+                    <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 text-[11px] leading-relaxed">
+                      🤝 <i>"I prefer 1-on-1 collaborative sessions. 45 mins on your topic, 45 mins on mine."</i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                  <span class="text-[11px] text-slate-400 flex items-center gap-1">
+                    <i data-lucide="undo" class="w-3 h-3"></i> Flip back
+                  </span>
+                  <button onclick="openProposalModal(${peer.id}, event)" class="hover-target px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all flex items-center gap-1.5">
+                    <i data-lucide="check" class="w-3 h-3"></i> Connect Now
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+      attachHoverTargets();
+      initCardSpotlights();
+    }
+
+    function toggleCardFlip(peerId, event) {
+      if (event.target.closest('button')) return;
+      const cardContainer = document.getElementById(`card-container-${peerId}`);
+      if (cardContainer) cardContainer.classList.toggle('card-flipped');
+    }
+
+    // -------------------------------------------------------------
+    // INTERACTIVE SPOTLIGHT ON CARDS (FOLLOWS CURSOR PROXIMITY)
+    // -------------------------------------------------------------
+    function initCardSpotlights() {
+      document.querySelectorAll('.spotlight-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty('--mouse-x', `${x}px`);
+          card.style.setProperty('--mouse-y', `${y}px`);
+        });
+      });
+    }
+
+    // -------------------------------------------------------------
+    // MULTI-SELECT PILLS IN MATCH MATRIX
+    // -------------------------------------------------------------
+    function initMatrixPills() {
+      const teachContainer = document.getElementById('teach-pills');
+      const learnContainer = document.getElementById('learn-pills');
+
+      teachContainer.innerHTML = availableSkillsList.map(skill => {
+        const isSelected = selectedOfferSkills.includes(skill);
+        return `
+          <button type="button" onclick="toggleOfferSkill('${skill}')" class="hover-target text-xs px-3 py-1.5 rounded-lg font-medium border transition-all ${
+            isSelected 
+              ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 font-semibold shadow-sm' 
+              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+          }">
+            ${isSelected ? '✓ ' : '+ '}${skill}
+          </button>
+        `;
+      }).join('');
+
+      learnContainer.innerHTML = availableSkillsList.map(skill => {
+        const isSelected = selectedSeekSkills.includes(skill);
+        return `
+          <button type="button" onclick="toggleSeekSkill('${skill}')" class="hover-target text-xs px-3 py-1.5 rounded-lg font-medium border transition-all ${
+            isSelected 
+              ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-semibold shadow-sm' 
+              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+          }">
+            ${isSelected ? '✓ ' : '+ '}${skill}
+          </button>
+        `;
+      }).join('');
+
+      document.getElementById('teach-selected-count').innerText = `${selectedOfferSkills.length} selected`;
+      document.getElementById('learn-selected-count').innerText = `${selectedSeekSkills.length} selected`;
+
+      runMatchMatrix();
+      attachHoverTargets();
+    }
+
+    function toggleOfferSkill(skill) {
+      const idx = selectedOfferSkills.indexOf(skill);
+      if (idx === -1) selectedOfferSkills.push(skill);
+      else selectedOfferSkills.splice(idx, 1);
+      initMatrixPills();
+    }
+
+    function toggleSeekSkill(skill) {
+      const idx = selectedSeekSkills.indexOf(skill);
+      if (idx === -1) selectedSeekSkills.push(skill);
+      else selectedSeekSkills.splice(idx, 1);
+      initMatrixPills();
+    }
+
+    function clearMatrixPills() {
+      selectedOfferSkills = [];
+      selectedSeekSkills = [];
+      initMatrixPills();
+    }
+
+    function runMatchMatrix() {
+      const container = document.getElementById('matrix-results-grid');
+      const countEl = document.getElementById('matrix-match-count');
+
+      // Rank profiles based on overlap with selectedOfferSkills and selectedSeekSkills
+      let scoredProfiles = profiles.map(peer => {
+        let teachMatches = [];
+        let learnMatches = [];
+
+        if (selectedSeekSkills.length > 0) {
+          teachMatches = peer.teaching.filter(t => selectedSeekSkills.some(s => s.toLowerCase() === t.toLowerCase()));
+        } else {
+          teachMatches = peer.teaching;
+        }
+
+        if (selectedOfferSkills.length > 0) {
+          learnMatches = peer.learning.filter(l => selectedOfferSkills.some(o => o.toLowerCase() === l.toLowerCase()));
+        } else {
+          learnMatches = peer.learning;
+        }
+
+        const hasOfferConstraint = selectedOfferSkills.length > 0;
+        const hasSeekConstraint = selectedSeekSkills.length > 0;
+
+        let matchPercentage = 0;
+        if (!hasOfferConstraint && !hasSeekConstraint) {
+          matchPercentage = 100;
+        } else {
+          const offerScore = hasOfferConstraint ? (learnMatches.length > 0 ? 50 : 0) : 50;
+          const seekScore = hasSeekConstraint ? (teachMatches.length > 0 ? 50 : 0) : 50;
+          matchPercentage = offerScore + seekScore;
+        }
+
+        return {
+          ...peer,
+          matchPercentage,
+          matchedTeaching: teachMatches,
+          matchedLearning: learnMatches,
+          isMutual: (teachMatches.length > 0 && learnMatches.length > 0)
+        };
+      });
+
+      // Filter matches with > 0 score
+      let filtered = scoredProfiles.filter(p => p.matchPercentage >= 50);
+      filtered.sort((a, b) => b.matchPercentage - a.matchPercentage);
+
+      countEl.innerText = `${filtered.length} Matches Found`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-10 text-center bg-slate-900 rounded-xl border border-slate-800">
+            <i data-lucide="sparkles" class="w-8 h-8 text-amber-400/50 mx-auto mb-2"></i>
+            <p class="text-xs font-semibold text-slate-300">No matching peers for this specific combination.</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Try toggling different skills or select fewer constraints.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        attachHoverTargets();
+        return;
+      }
+
+      container.innerHTML = filtered.map(peer => `
+        <div class="spotlight-card p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr ${peer.avatarBg} font-bold flex items-center justify-center text-white text-xs">
+                  ${peer.initials}
+                </div>
+                <div>
+                  <h4 class="font-display font-bold text-xs text-white">${peer.name}</h4>
+                  <p class="text-[11px] text-slate-400">${peer.branch} • ${peer.sem}</p>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                peer.matchPercentage === 100 
+                  ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' 
+                  : 'bg-sky-500/15 text-sky-300 border border-sky-500/30'
+              }">
+                ${peer.matchPercentage}% Reciprocal Match
+              </span>
+            </div>
+
+            <div class="text-xs space-y-1.5 mb-3 bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
+              <p class="text-slate-300">
+                <span class="text-emerald-400 font-semibold">They can teach you:</span> 
+                ${peer.teaching.map(t => `<b class="${selectedSeekSkills.includes(t) ? 'text-emerald-300 underline' : 'text-slate-300'}">${t}</b>`).join(', ')}
+              </p>
+              <p class="text-slate-300">
+                <span class="text-sky-400 font-semibold">They want from you:</span> 
+                ${peer.learning.map(l => `<b class="${selectedOfferSkills.includes(l) ? 'text-sky-300 underline' : 'text-slate-300'}">${l}</b>`).join(', ')}
+              </p>
+            </div>
+          </div>
+
+          <button onclick="openProposalModal(${peer.id}, event)" class="hover-target w-full py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i> Propose Mutual Barter
+          </button>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+      attachHoverTargets();
+      initCardSpotlights();
+    }
+
+    // -------------------------------------------------------------
+    // SEARCH & FILTER
+    // -------------------------------------------------------------
+    function handleFilterChange() {
+      const query = document.getElementById('search-input').value.toLowerCase().trim();
+      const branch = document.getElementById('branch-filter').value;
+
+      const filtered = profiles.filter(p => {
+        const matchesBranch = (branch === 'all') || (p.branch === branch);
+        let matchesQuery = true;
+        if (query) {
+          const matchName = p.name.toLowerCase().includes(query);
+          const matchTeach = p.teaching.some(t => t.toLowerCase().includes(query));
+          const matchLearn = p.learning.some(l => l.toLowerCase().includes(query));
+          const matchBio = p.bio.toLowerCase().includes(query);
+
+          if (filterMode === 'offered') matchesQuery = matchTeach;
+          else if (filterMode === 'wanted') matchesQuery = matchLearn;
+          else matchesQuery = matchName || matchTeach || matchLearn || matchBio;
+        }
+        return matchesBranch && matchesQuery;
+      });
+
+      renderProfiles(filtered);
+    }
+
+    function setFilterMode(mode) {
+      filterMode = mode;
+      document.querySelectorAll('.filter-mode-btn').forEach(b => {
+        b.classList.remove('bg-sky-600', 'text-white');
+        b.classList.add('text-slate-400');
+      });
+      const activeBtn = document.getElementById(`mode-${mode}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-400');
+        activeBtn.classList.add('bg-sky-600', 'text-white');
+      }
+      handleFilterChange();
+    }
+
+    function applyQuickTag(tag) {
+      document.getElementById('search-input').value = tag;
+      handleFilterChange();
+    }
+
+    function resetFilters() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('branch-filter').value = 'all';
+      setFilterMode('all');
+    }
+
+    // -------------------------------------------------------------
+    // TAB NAVIGATION
+    // -------------------------------------------------------------
+    function switchTab(tabId) {
+      document.querySelectorAll('.screen-view').forEach(s => s.classList.add('hidden'));
+      const targetScreen = document.getElementById(`screen-${tabId}`);
+      if (targetScreen) targetScreen.classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-sky-600', 'text-white', 'shadow-sm');
+        btn.classList.add('text-slate-400');
+      });
+      const currentNav = document.getElementById(`nav-${tabId}`);
+      if (currentNav) {
+        currentNav.classList.remove('text-slate-400');
+        currentNav.classList.add('bg-sky-600', 'text-white', 'shadow-sm');
+      }
+
+      if (tabId === 'matrix') initMatrixPills();
+      else if (tabId === 'requests') renderProposals();
+    }
+
+    // -------------------------------------------------------------
+    // PROPOSALS SENT
+    // -------------------------------------------------------------
+    function renderProposals() {
+      const container = document.getElementById('proposals-list');
+      const badge = document.getElementById('requests-count-badge');
+      badge.innerText = proposals.length;
+
+      if (proposals.length === 0) {
+        container.innerHTML = `
+          <div class="py-10 text-center bg-slate-900 rounded-xl border border-slate-800">
+            <i data-lucide="inbox" class="w-8 h-8 text-slate-500 mx-auto mb-2"></i>
+            <p class="text-xs font-semibold text-slate-300">No proposals sent yet.</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Explore peers and click "Express Interest" to create your first simulated trade!</p>
+            <button onclick="switchTab('explore')" class="hover-target mt-3 px-3.5 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold">Explore Directory</button>
+          </div>
+        `;
+        lucide.createIcons();
+        attachHoverTargets();
+        return;
+      }
+
+      container.innerHTML = proposals.map((p, idx) => `
+        <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-sky-600/20 text-sky-400 flex items-center justify-center font-bold text-xs">
+              ${p.peerInitials}
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="text-xs font-bold text-white">${p.peerName}</h4>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 font-semibold border border-emerald-500/20">Pending Confirmation</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">
+                Trading: <b class="text-emerald-300">${p.offeringSkill}</b> for <b class="text-sky-300">${p.targetSkill}</b> • ${p.hours} via ${p.medium}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 self-end sm:self-auto text-xs text-slate-400">
+            <span class="text-[11px]">${p.timestamp}</span>
+            <button onclick="deleteProposal(${idx})" class="hover-target p-1 text-slate-500 hover:text-red-400">
+              <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+      attachHoverTargets();
+    }
+
+    function deleteProposal(idx) {
+      proposals.splice(idx, 1);
+      localStorage.setItem('sb_proposals', JSON.stringify(proposals));
+      renderProposals();
+    }
+
+    function clearAllProposals() {
+      proposals = [];
+      localStorage.removeItem('sb_proposals');
+      renderProposals();
+      showToast("Ledger Cleared", "All proposal history wiped.");
+    }
+
+    function openProposalModal(peerId, event) {
+      if (event) event.stopPropagation();
+      selectedPeerForProposal = profiles.find(p => p.id === peerId);
+      if (!selectedPeerForProposal) return;
+
+      document.getElementById('modal-peer-name').innerText = selectedPeerForProposal.name;
+      document.getElementById('modal-peer-details').innerText = `${selectedPeerForProposal.branch} • ${selectedPeerForProposal.sem} • Teaching: ${selectedPeerForProposal.teaching.join(', ')}`;
+      document.getElementById('modal-peer-avatar').innerText = selectedPeerForProposal.initials;
+      document.getElementById('modal-peer-title').innerText = `Propose Exchange with ${selectedPeerForProposal.name.split(' ')[0]}`;
+      
+      document.getElementById('prop-my-skill').value = '';
+      document.getElementById('prop-message').value = '';
+
+      document.getElementById('proposal-modal').classList.remove('hidden');
+    }
+
+    function closeProposalModal() {
+      document.getElementById('proposal-modal').classList.add('hidden');
+    }
+
+    function handleProposalSubmit(e) {
+      e.preventDefault();
+      if (!selectedPeerForProposal) return;
+
+      const mySkill = document.getElementById('prop-my-skill').value.trim();
+      const hours = document.getElementById('prop-hours').value;
+      const medium = document.getElementById('prop-medium').value;
+      const note = document.getElementById('prop-message').value.trim();
+
+      const newProp = {
+        peerId: selectedPeerForProposal.id,
+        peerName: selectedPeerForProposal.name,
+        peerInitials: selectedPeerForProposal.initials,
+        targetSkill: selectedPeerForProposal.teaching[0],
+        offeringSkill: mySkill,
+        hours: hours,
+        medium: medium,
+        note: note,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      proposals.unshift(newProp);
+      localStorage.setItem('sb_proposals', JSON.stringify(proposals));
+      
+      closeProposalModal();
+      showToast("Proposal Dispatched!", `Your trade offer to ${selectedPeerForProposal.name} was registered.`);
+      document.getElementById('requests-count-badge').innerText = proposals.length;
+    }
+
+    function toggleBookmark(peerId, event) {
+      if (event) event.stopPropagation();
+      const index = bookmarks.indexOf(peerId);
+      if (index === -1) {
+        bookmarks.push(peerId);
+        showToast("Peer Bookmarked", "Added to your personal shortlist.");
+      } else {
+        bookmarks.splice(index, 1);
+        showToast("Bookmark Removed", "Removed from your shortlist.");
+      }
+      localStorage.setItem('sb_bookmarks', JSON.stringify(bookmarks));
+      updateBookmarkBadge();
+      renderProfiles();
+    }
+
+    function updateBookmarkBadge() {
+      const badge = document.getElementById('bookmark-badge');
+      if (bookmarks.length > 0) {
+        badge.innerText = bookmarks.length;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function openBookmarksDrawer() {
+      const listEl = document.getElementById('bookmarks-list');
+      const bookmarkedPeers = profiles.filter(p => bookmarks.includes(p.id));
+
+      if (bookmarkedPeers.length === 0) {
+        listEl.innerHTML = `
+          <div class="py-12 text-center text-slate-500 text-xs">
+            <i data-lucide="bookmark-minus" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
+            No bookmarked peers yet.
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = bookmarkedPeers.map(peer => `
+          <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-tr ${peer.avatarBg} font-bold flex items-center justify-center text-white text-xs">
+                ${peer.initials}
+              </div>
+              <div>
+                <h5 class="text-xs font-bold text-white">${peer.name}</h5>
+                <p class="text-[11px] text-slate-400">Teaches: ${peer.teaching[0]}</p>
+              </div>
+            </div>
+            <button onclick="openProposalModal(${peer.id}, event)" class="hover-target px-2.5 py-1 rounded-md bg-sky-600 text-white text-xs font-semibold">
+              Trade
+            </button>
+          </div>
+        `).join('');
+      }
+
+      lucide.createIcons();
+      attachHoverTargets();
+      document.getElementById('bookmarks-drawer').classList.remove('translate-x-full');
+    }
+
+    function closeBookmarksDrawer() {
+      document.getElementById('bookmarks-drawer').classList.add('translate-x-full');
+    }
+
+    function openNewListingModal() {
+      document.getElementById('new-listing-modal').classList.remove('hidden');
+    }
+    function closeNewListingModal() {
+      document.getElementById('new-listing-modal').classList.add('hidden');
+    }
+
+    function handleNewListingSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-name').value.trim();
+      const offered = document.getElementById('new-offered').value.split(',').map(s => s.trim()).filter(Boolean);
+      const wanted = document.getElementById('new-wanted').value.split(',').map(s => s.trim()).filter(Boolean);
+      const badge = document.getElementById('new-badge').value;
+
+      const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || "ST";
+
+      const newProfile = {
+        id: Date.now(),
+        name: name,
+        initials: initials,
+        branch: "ISE",
+        sem: "6th Sem",
+        rating: "5.0",
+        reviews: 1,
+        badge: badge,
+        badgeBg: "bg-sky-500/10 text-sky-400 border-sky-500/20",
+        avatarBg: "from-sky-500 to-blue-600",
+        bio: `New student peer listing. Excited to trade skills on campus!`,
+        teaching: offered,
+        learning: wanted,
+        availability: "Flexible • Campus Library",
+        preferredTool: "Google Meet",
+        patienceLevel: "⭐⭐⭐⭐⭐ High"
+      };
+
+      profiles.unshift(newProfile);
+      closeNewListingModal();
+      renderProfiles();
+      showToast("Profile Listed!", "Your skills have been published to the directory.");
+    }
+
+    function openArchitectureModal() {
+      document.getElementById('architecture-modal').classList.remove('hidden');
+    }
+    function closeArchitectureModal() {
+      document.getElementById('architecture-modal').classList.add('hidden');
+    }
+
+    function showToast(title, msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-title').innerText = title;
+      document.getElementById('toast-msg').innerText = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+    }
+
+    // -------------------------------------------------------------
+    // LIVE CAMPUS TICKER
+    // -------------------------------------------------------------
+    const tickerUpdates = [
+      "Arjun (ISE 6th Sem) just traded <b>AWS Cloud Architecture</b> for <b>React & Frontend</b> with Rohan (CSE)",
+      "Ananya (ISE) pledged 2 hrs/week of <b>Python / Data Science</b> to Pooja (AIML) for <b>Figma UI Prototyping</b>",
+      "Vikas (ISE 6th Sem) accepted a mutual trade for <b>DSA & Java</b> in exchange for <b>Docker & DevOps</b>",
+      "Kavya (ECE) opened a collaborative weekend sprint for <b>Flutter Apps</b> with Arjun (ISE)",
+      "Preksha M. (ISE) posted new skill: <b>React.js</b> & seeking <b>CloudWatch monitoring</b>"
+    ];
+    let tickerIdx = 0;
+    setInterval(() => {
+      tickerIdx = (tickerIdx + 1) % tickerUpdates.length;
+      const el = document.getElementById('ticker-content');
+      if (el) {
+        el.style.opacity = '0';
+        setTimeout(() => {
+          el.innerHTML = tickerUpdates[tickerIdx];
+          el.style.opacity = '1';
+        }, 200);
+      }
+    }, 4500);
+
+    // -------------------------------------------------------------
+    // CUSTOM MOUSE CURSOR
+    // -------------------------------------------------------------
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    let mX = window.innerWidth / 2;
+    let mY = window.innerHeight / 2;
+    let rX = mX;
+    let rY = mY;
+
+    window.addEventListener('mousemove', (e) => {
+      mX = e.clientX;
+      mY = e.clientY;
+      dot.style.transform = `translate(${mX}px, ${mY}px)`;
+    });
+
+    function updateCursorRing() {
+      rX += (mX - rX) * 0.18;
+      rY += (mY - rY) * 0.18;
+      ring.style.transform = `translate(${rX}px, ${rY}px)`;
+      requestAnimationFrame(updateCursorRing);
+    }
+    requestAnimationFrame(updateCursorRing);
+
+    function attachHoverTargets() {
+      document.querySelectorAll('button, a, input, select, textarea, .hover-target, .spotlight-card').forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.classList.add('cursor-active'));
+        el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-active'));
+      });
+    }
+
+    // -------------------------------------------------------------
+    // LIVE INTERACTIVE PARTICLES CANVAS (DOTS ONLY, NO SHAPES)
+    // -------------------------------------------------------------
+    const canvas = document.getElementById('particles-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    const count = Math.min(width > 768 ? 65 : 30, 80);
+
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        radius: Math.random() * 1.5 + 1
+      });
+    }
+
+    function animateDots() {
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+
+        // Proximity repulsion with cursor
+        const dx = mX - p.x;
+        const dy = mY - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          const force = (120 - dist) / 120;
+          p.x -= (dx / dist) * force * 2.2;
+          p.y -= (dy / dist) * force * 2.2;
+        }
+
+        // Draw dot
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
+        ctx.fill();
+
+        // Connect nearby dots
+        for (let j = i + 1; j < particles.length; j++) {
+          let p2 = particles[j];
+          let d2 = Math.hypot(p.x - p2.x, p.y - p2.y);
+          if (d2 < 110) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${0.14 * (1 - d2 / 110)})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(animateDots);
+    }
+    requestAnimationFrame(animateDots);
+
+    // -------------------------------------------------------------
+    // INIT
+    // -------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      renderProfiles();
+      updateBookmarkBadge();
+      attachHoverTargets();
+    });
+  </script>
+</body>
+</html>
