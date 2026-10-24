@@ -36,30 +36,24 @@ if (-not $sgId -or $sgId -eq "None") {
     aws ec2 authorize-security-group-ingress --group-id $sgId --protocol tcp --port 80 --cidr 0.0.0.0/0 --region $Region --profile $Profile | Out-Null
     aws ec2 authorize-security-group-ingress --group-id $sgId --protocol tcp --port 22 --cidr 0.0.0.0/0 --region $Region --profile $Profile | Out-Null
 }
-Write-Host "Using Security Group: $sgId (Ports 80 and 22 open)" -ForegroundColor Green
+Write-Host "Using Security Group: $sgId - Ports 80 and 22 open" -ForegroundColor Green
 
 # 4. Get Latest Amazon Linux 2023 AMI
 Write-Host "🔍 Finding latest Amazon Linux 2023 AMI..." -ForegroundColor Cyan
 $amiId = (aws ssm get-parameters --names "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64" --region $Region --profile $Profile --query "Parameters[0].Value" --output text)
 Write-Host "Using AMI: $amiId" -ForegroundColor Green
 
-# 5. Package dist into base64 zip for UserData
-$tempZip = "$env:TEMP\dist_$([Guid]::NewGuid().ToString('N')).zip"
-Compress-Archive -Path "$DistPath\*" -DestinationPath $tempZip -Force
-$zipBase64 = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($tempZip))
-Remove-Item $tempZip -Force
-
-# 6. Build UserData script
+# 5. Build UserData script using GitHub Repo
 $userDataScript = @"
 #!/bin/bash
 dnf update -y
-dnf install -y nginx unzip
+dnf install -y nginx git
 systemctl enable nginx
 systemctl start nginx
 
-mkdir -p /usr/share/nginx/html
-echo "$zipBase64" | base64 -d > /tmp/site.zip
-unzip -o /tmp/site.zip -d /usr/share/nginx/html/
+mkdir -p /tmp/repo
+git clone https://github.com/yash2006kr/signature_event.git /tmp/repo
+cp -r /tmp/repo/dist/* /usr/share/nginx/html/
 chown -R nginx:nginx /usr/share/nginx/html
 chmod -R 755 /usr/share/nginx/html
 systemctl restart nginx
